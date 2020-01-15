@@ -21,7 +21,7 @@ function start(){
         name: "selectTable",
         type: "list",
         message: "Would you like to add a department, roles or employees?",
-        choices: ["add a department", "add a role", "add an employee", "end"]
+        choices: ["add a department", "add a role", "add an employee", "view departments", "end"]
     })
     .then(function(answer){
         if (answer.selectTable === "add a department"){
@@ -32,6 +32,9 @@ function start(){
         }
         else if(answer.selectTable === "add an employee"){
             addEmployee();
+        }
+        else if(answer.selectTable === "view departments"){
+            viewDepartments();
         }
         else{
             connection.end();
@@ -122,4 +125,23 @@ function addEmployee(){
                 }
             )
         })
+}
+
+var departments = [];
+
+function viewDepartments(){
+    connection.query(
+        "SELECT * FROM department;",function(err, result){
+            if(err) throw err;
+            departments.unshift(result);
+            console.table(departments[0]);         
+        }
+    );
+    // inquirer
+        // .prompt({
+        //     name: "viewDept",
+        //     type: "list",
+        //     message: "What department would you like to see?"
+        //     choices: [employee]
+        // })
 }
