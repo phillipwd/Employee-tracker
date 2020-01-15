@@ -20,8 +20,8 @@ function start(){
     .prompt({
         name: "selectTable",
         type: "list",
-        message: "Would you like to add a department, roles or employees?",
-        choices: ["add a department", "add a role", "add an employee", "view departments", "view roles", "end"]
+        message: "Please select your action from the list",
+        choices: ["add a department", "add a role", "add an employee", "view departments", "view roles", "view employees", "end"]
     })
     .then(function(answer){
         if (answer.selectTable === "add a department"){
@@ -38,6 +38,9 @@ function start(){
         }
         else if(answer.selectTable === "view roles"){
             viewRoles();
+        }
+        else if(answer.selectTable === "view employees"){
+            viewEmployees();
         }
         else{
             connection.end();
@@ -155,3 +158,16 @@ function viewRoles(){
         }
     );
 }
+
+var employees = [];
+
+function viewEmployees(){
+    connection.query(
+        "SELECT * FROM employee;", function(err, result){
+            if (err) throw err;
+            employees.unshift(result);
+            console.table(employees[0]);
+            start();
+        }
+    )
+};
