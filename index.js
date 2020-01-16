@@ -21,26 +21,29 @@ function start(){
         name: "selectTable",
         type: "list",
         message: "Please select your action from the list",
-        choices: ["add a department", "add a role", "add an employee", "view departments", "view roles", "view employees", "end"]
+        choices: ["Add a department", "Add a role", "Add an employee", "View departments", "View roles", "View employees", "Update employee role", "end"]
     })
     .then(function(answer){
-        if (answer.selectTable === "add a department"){
+        if (answer.selectTable === "Add a department"){
             addADepartment();
         }
-        else if(answer.selectTable === "add a role"){
+        else if(answer.selectTable === "Add a role"){
             addARole();
         }
-        else if(answer.selectTable === "add an employee"){
+        else if(answer.selectTable === "Add an employee"){
             addEmployee();
         }
-        else if(answer.selectTable === "view departments"){
+        else if(answer.selectTable === "View departments"){
             viewDepartments();
         }
-        else if(answer.selectTable === "view roles"){
+        else if(answer.selectTable === "View roles"){
             viewRoles();
         }
-        else if(answer.selectTable === "view employees"){
+        else if(answer.selectTable === "View employees"){
             viewEmployees();
+        }
+        else if(answer.selectTable === "Update employee role"){
+            editEmployeeRole();
         }
         else{
             connection.end();
@@ -148,6 +151,8 @@ function viewDepartments(){
 
 var roles = [];
 
+let roleName = [];
+
 function viewRoles(){
     connection.query(
         "SELECT * FROM roles;",function(err, result){
@@ -171,3 +176,109 @@ function viewEmployees(){
         }
     )
 };
+
+let employeeChoices = []
+
+function editEmployeeRole(){
+    // if(employees.length === 0){
+        connection.query(
+            "SELECT * FROM employee;", function(err, result){
+                if (err) throw err;
+                employees = result;
+                if(roles.length === 0){
+                    connection.query(
+                        "SELECT * FROM roles;",function(err, result){
+                            if(err) throw err;
+                            roles = result;
+                        })
+            }
+     
+    inquirer
+    .prompt({
+        name: "verify",
+        type: "list",
+        message: "Employee data will be changed. Continue?",
+        choices:["yes", "no"]
+    })
+    .then(function(answer){
+        if(answer.verify === "yes"){
+            for(i = 0; i < employees.length; i++){
+                // console.log(employees);
+                
+                const temp = employees[i].first_name + " " + employees[i].last_name;///
+                employeeChoices.push(temp);///
+                // console.log(employeeChoices);//// this works, but may make things harder later
+            };
+            // if(roles.length === 0){
+            //     connection.query(
+            //         "SELECT * FROM roles;",function(err, result){
+            //             if(err) throw err;
+            //             roles = result;
+            //         })
+                    for(i = 0; i < roles.length; i++){
+                        roleName.push(roles[i].title);    
+                    }
+            // }
+            selectEmployee();          
+            }//ifyes
+        else if(answer.verify === "no"){
+            start();
+        }//elseif
+    })//.then
+})//firstquery
+
+}//function begin
+// }
+function selectEmployee(){
+    inquirer
+    .prompt({
+        name: "selectedEmployee",
+        type: "list",
+        message: "Which employee would you like to update?",
+        choices: employeeChoices
+    })
+    .then(function(answer){
+        console.log(answer);
+        let id;
+        for(i = 0; i < employeeChoices.length; i++){
+            if(answer.selectedEmployee === employees[i].first_name + " " + employees[i].last_name){
+                id = employees[i].id;    
+            }
+        }
+        // if(roles.length === 0){
+        //     connection.query(
+        //         "SELECT * FROM roles;",function(err, result){
+        //             if(err) throw err;
+        //             roles.unshift(result);
+        //     })
+        // }
+        inquirer
+        .prompt({
+            name: "newRole",
+            type: "list",
+            message: "What role would you like to change?",
+            choices: roleName
+        })
+        .then(function(answer){
+            let roleId;
+            console.log(roles);
+            
+            for(i = 0; i < roles.length; i++){
+                if(answer.newRole === roles[i].title){
+                    roleId = roles[i].id;
+                }
+            }
+console.log(roleId);
+
+
+            connection.query(
+                "UPDATE employee SET ? WHERE ?", [{role_id: roleId}, {id:id}],
+                function(err){
+                    if (err) throw err;
+                    console.log("Role changed");    
+                }
+            )
+        })    
+    })
+}
+
